@@ -8,15 +8,9 @@ import (
 	"gopkg.in/gorp.v1"
 	"log"
 	"time"
-	// "fmt"
+	"github.com/robfig/config"
+	"fmt"
 )
-
-// What will be logged:
-// date/time (date/time)
-// latitude (double)
-// longitude (double)
-// ID (varchar 32)
-// VenueID (varchar 255)
 
 type Log struct {
 	Id int64 `db:"id" json:"id"`
@@ -35,11 +29,6 @@ func checkErr(err error, msg string) {
 
 
 func main() {
-	// var log []Log
-	// val, err := dbmap.Select(&log, "SELECT * FROM log")
-	// checkErr(err, "")
-	// fmt.Println(val) //
-	
 	r := gin.Default()
 
 	v1 := r.Group("api/v1")
@@ -50,21 +39,31 @@ func main() {
 		// v1.PUT("/logs/:id", UpdateLog)
 		// v1.DELETE("/logs/:id", DeleteLog)
 	}
-	r.Run(":8080")
+	r.Run(":8080")	
 }
 
 var dbmap = initDb()
 
 func initDb() *gorp.DbMap {
-	db, err := sql.Open("mysql", "rla_d3c63ab540:CjQi8eiaYgMg@tcp(rest-logging-api-db.c9ezbafdvl9e.us-west-2.rds.amazonaws.com:3306)/rest_logging_api_db?parseTime=true")
+	c, err := config.ReadDefault("config.cfg")
+	checkErr(err, "reading config failed")
+	dbName, err := c.String("DEFAULT", "db_name")
+	checkErr(err, "reading config failed")
+	dbUserName, err := c.String("DEFAULT", "db_username")
+	checkErr(err, "reading config failed")
+	dbHost, err := c.String("DEFAULT", "db_host")
+	checkErr(err, "reading config failed")
+	dbPassword, err := c.String("DEFAULT", "db_password")
+	checkErr(err, "reading config failed")
+	
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?parseTime=true", dbUserName, dbPassword, dbHost, dbName)
+	db, err := sql.Open("mysql", connStr)
 	checkErr(err, "sql.Open failed")
+	
 	dbmap := &gorp.DbMap{Db: db, Dialect:           gorp.MySQLDialect{"InnoDB", "UTF8"}}
 	dbmap.AddTableWithName(Log{}, "log").SetKeys(true, "Id")
 	err = dbmap.CreateTablesIfNotExists()
 	checkErr(err, "Create table failed")
-	// insert example
-	// _, err = dbmap.Exec(`INSERT INTO log (logtime,latitude,longitude,venue_id) VALUES (?, ?, ?, ?)`, time.Now().UTC(), 30.267153, -97.7430608,"gopher-venue");
-	checkErr(err, "error inserting data")
 	return dbmap
 }
 
