@@ -1,0 +1,29 @@
+#local request tests
+# create a log
+POST http://localhost:8080/api/v1/logs
+Content-Type: application/json
+{"latitude":30.267153,"venue_id":"gopher-venue","longitude":-97.7430608,"logtime":"2015-06-04T00:00:00.000000000000Z"}
+
+#list of logs
+GET http://localhost:8080/api/v1/logs
+
+# read a log
+GET http://localhost:8080/api/v1/logs/29295
+
+
+
+
+
+# server request tests
+# create a log
+POST http://52.26.198.10/api/v1/logs
+Content-Type: application/json
+{"latitude":30.267153,"venue_id":"gopher-venue","longitude":-97.7430608,"logtime":"2015-06-04T00:00:00.000000000000Z"}
+
+
+#list of logs
+GET http://52.26.198.10/api/v1/logs
+
+# read a log
+GET http://52.26.198.10/api/v1/logs/29295
+
